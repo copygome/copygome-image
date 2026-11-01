@@ -1,0 +1,359 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>🤖 AI 네이버 블로그 글 생성기</title>
+  <style>
+    /* ========================================
+       🎨 스타일 (CSS)
+       ======================================== */
+
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: 'Malgun Gothic', sans-serif;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      min-height: 100vh;
+      padding: 20px;
+    }
+
+    .container {
+      max-width: 1200px;
+      margin: 0 auto;
+    }
+
+    /* 제목 */
+    h1 {
+      color: white;
+      text-align: center;
+      margin-bottom: 30px;
+      font-size: 2.5em;
+      text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+    }
+
+    /* 각 섹션 박스 */
+    .section {
+      background: white;
+      padding: 30px;
+      border-radius: 15px;
+      margin-bottom: 20px;
+      box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+    }
+
+    .section h2 {
+      color: #667eea;
+      margin-bottom: 15px;
+      font-size: 1.5em;
+    }
+
+    /* 입력창 */
+    textarea, input {
+      width: 100%;
+      padding: 12px;
+      border: 2px solid #e0e0e0;
+      border-radius: 8px;
+      font-size: 14px;
+      margin-bottom: 10px;
+      font-family: 'Malgun Gothic', sans-serif;
+    }
+
+    textarea {
+      min-height: 150px;
+      resize: vertical;
+    }
+
+    /* 버튼 */
+    button {
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      color: white;
+      border: none;
+      padding: 12px 30px;
+      border-radius: 25px;
+      font-size: 16px;
+      font-weight: bold;
+      cursor: pointer;
+      transition: transform 0.2s;
+      margin-right: 10px;
+      margin-bottom: 10px;
+    }
+
+    button:hover {
+      transform: scale(1.05);
+    }
+
+    button:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+    }
+
+    /* 결과 박스 */
+    .result-item {
+      background: #f8f9fa;
+      padding: 20px;
+      border-radius: 10px;
+      margin-bottom: 15px;
+      border: 2px solid #e0e0e0;
+    }
+
+    .result-item h3 {
+      color: #667eea;
+      margin-bottom: 10px;
+    }
+
+    .result-body {
+      line-height: 1.8;
+      white-space: pre-wrap;
+    }
+
+    .result-body img {
+      max-width: 100%;
+      height: auto;
+      border-radius: 8px;
+      margin: 10px 0;
+    }
+
+    /* 로딩 표시 */
+    .loading {
+      text-align: center;
+      color: #667eea;
+      font-weight: bold;
+      padding: 20px;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>🤖 AI 네이버 블로그 글 생성기</h1>
+
+    <!-- ========================================
+         📝 1단계: 글 스타일 분석
+         ======================================== -->
+    <div class="section">
+      <h2>📝 1단계: 내 글 스타일 분석</h2>
+      <p>평소에 쓴 블로그 글 2~3개를 붙여넣으세요:</p>
+      <textarea id="referencePosts" placeholder="여기에 참고 글을 붙여넣으세요..."></textarea>
+      <button onclick="analyzeStyle()">🔍 스타일 분석</button>
+      <div id="styleResult"></div>
+    </div>
+
+    <!-- ========================================
+         🏪 2단계: 가게 정보 입력
+         ======================================== -->
+    <div class="section">
+      <h2>🏪 2단계: 가게 정보 입력</h2>
+      <input type="text" id="storeName" placeholder="가게 이름 (예: 강남 맛집 카페)">
+      <input type="text" id="storeType" placeholder="업종 (예: 카페, 식당, 미용실)">
+      <input type="text" id="storeLocation" placeholder="지역 (예: 강남역, 홍대)">
+      <input type="text" id="storeHighlights" placeholder="강조할 점 (예: 인테리어 예쁨, 사진 맛집)">
+    </div>
+
+    <!-- ========================================
+         🔑 3단계: 키워드 입력
+         ======================================== -->
+    <div class="section">
+      <h2>🔑 3단계: 키워드 입력</h2>
+      <p>한 줄에 하나씩 입력하세요:</p>
+      <textarea id="keywords" placeholder="강남 맛집&#10;데이트 카페&#10;주말 브런치"></textarea>
+      <button onclick="generatePosts()">✨ 글 생성</button>
+    </div>
+
+    <!-- ========================================
+         📦 4단계: 생성 결과
+         ======================================== -->
+    <div class="section">
+      <h2>📦 4단계: 생성 결과</h2>
+      <div id="results"></div>
+    </div>
+  </div>
+
+  <script>
+    // ========================================
+    // 📊 전역 변수 (데이터 저장용)
+    // ========================================
+
+    let analyzedStyle = null;  // 분석된 스타일
+    let storeInfo = null;      // 가게 정보
+    let generatedPosts = [];   // 생성된 글들
+
+    // localStorage에 저장/불러오기
+    // TODO: AI한테 물어보기!
+    // "localStorage 사용법 알려줘"
+
+    // ========================================
+    // 📝 스타일 분석 함수
+    // ========================================
+    async function analyzeStyle() {
+      // TODO: AI한테 물어보기!
+      // "fetch로 POST 요청 보내는 방법은?"
+      // "JSON 데이터 어떻게 보내?"
+
+      const referencePosts = document.getElementById('referencePosts').value;
+
+      if (!referencePosts.trim()) {
+        alert('참고 글을 입력해주세요!');
+        return;
+      }
+
+      const resultDiv = document.getElementById('styleResult');
+      resultDiv.innerHTML = '<div class="loading">🔄 분석 중...</div>';
+
+      try {
+        // TODO: /api/analyze-style로 POST 요청
+        // TODO: 응답 받아서 화면에 표시
+        // TODO: analyzedStyle 변수에 저장
+
+        resultDiv.innerHTML = `
+          <div style="color: red; margin-top: 10px;">
+            ⚠️ TODO: 스타일 분석 API 호출 구현하기<br>
+            힌트: fetch() 사용, POST 요청, JSON 전송
+          </div>
+        `;
+
+      } catch (error) {
+        resultDiv.innerHTML = `<div style="color: red;">❌ 에러: ${error.message}</div>`;
+      }
+    }
+
+    // ========================================
+    // ✨ 블로그 글 생성 함수
+    // ========================================
+    async function generatePosts() {
+      // TODO: AI한테 물어보기!
+      // "여러 개 API 호출을 순차적으로 하려면?"
+      // "Promise와 async/await가 뭐야?"
+
+      // 1. 스타일 체크
+      if (!analyzedStyle) {
+        alert('먼저 스타일 분석을 해주세요!');
+        return;
+      }
+
+      // 2. 가게 정보 가져오기
+      storeInfo = {
+        name: document.getElementById('storeName').value,
+        type: document.getElementById('storeType').value,
+        location: document.getElementById('storeLocation').value,
+        highlights: document.getElementById('storeHighlights').value
+      };
+
+      if (!storeInfo.name || !storeInfo.type) {
+        alert('가게 이름과 업종은 필수입니다!');
+        return;
+      }
+
+      // 3. 키워드 가져오기
+      const keywordsText = document.getElementById('keywords').value;
+      const keywords = keywordsText.split('\n').filter(k => k.trim());
+
+      if (keywords.length === 0) {
+        alert('키워드를 입력해주세요!');
+        return;
+      }
+
+      // 4. 각 키워드마다 글 생성
+      const resultsDiv = document.getElementById('results');
+      resultsDiv.innerHTML = '<div class="loading">✨ 글 생성 중... (잠시만 기다려주세요)</div>';
+
+      generatedPosts = [];
+
+      // TODO: 키워드마다 API 호출
+      // TODO: 결과를 generatedPosts에 추가
+      // TODO: 화면에 표시
+
+      resultsDiv.innerHTML = `
+        <div style="color: red;">
+          ⚠️ TODO: 글 생성 API 호출 구현하기<br>
+          힌트: for 루프, await, /api/generate-post-with-image
+        </div>
+      `;
+    }
+
+    // ========================================
+    // 📋 복사 함수들
+    // ========================================
+
+    // 제목 복사
+    function copyTitle(index) {
+      // TODO: AI한테 물어보기!
+      // "클립보드에 텍스트 복사하는 방법은?"
+
+      const post = generatedPosts[index];
+      // TODO: navigator.clipboard.writeText() 사용
+      alert('TODO: 제목 복사 기능 구현하기');
+    }
+
+    // 본문 복사 (HTML 서식 유지)
+    async function copyBody(index) {
+      // TODO: AI한테 물어보기!
+      // "ClipboardItem API가 뭐야?"
+      // "HTML 서식 유지하면서 복사하는 방법은?"
+
+      const post = generatedPosts[index];
+
+      // TODO: 본문을 HTML로 변환
+      // TODO: ClipboardItem으로 복사
+
+      alert('TODO: 본문 복사 기능 구현하기');
+    }
+
+    // 태그 복사
+    function copyTags(index) {
+      // TODO: AI한테 물어보기!
+      // "배열을 문자열로 합치는 방법은?"
+
+      const post = generatedPosts[index];
+      // TODO: 해시태그 배열을 #태그1 #태그2 형식으로 변환
+      // TODO: 클립보드에 복사
+
+      alert('TODO: 태그 복사 기능 구현하기');
+    }
+
+    // ========================================
+    // 🎨 HTML 포맷팅 함수
+    // ========================================
+    function formatBodyHtml(body, images) {
+      // TODO: AI한테 물어보기!
+      // "문자열에서 특정 패턴 찾아서 바꾸는 방법은?"
+      // "정규표현식이 뭐야?"
+
+      // TODO: **별표** → <strong>굵게</strong>
+      // TODO: 줄바꿈 → <br>
+      // TODO: [IMAGE_PROMPT: ...] → <img> 태그
+
+      return body;
+    }
+
+    // ========================================
+    // 💾 localStorage 저장/불러오기
+    // ========================================
+    function saveToStorage() {
+      // TODO: AI한테 물어보기!
+      // "localStorage에 객체 저장하는 방법은?"
+
+      // TODO: analyzedStyle 저장
+      // TODO: storeInfo 저장
+    }
+
+    function loadFromStorage() {
+      // TODO: AI한테 물어보기!
+      // "localStorage에서 데이터 불러오는 방법은?"
+
+      // TODO: analyzedStyle 불러오기
+      // TODO: storeInfo 불러오기
+      // TODO: 화면에 채워넣기
+    }
+
+    // 페이지 로드 시 저장된 데이터 불러오기
+    window.addEventListener('load', () => {
+      // TODO: loadFromStorage() 호출
+      console.log('TODO: 저장된 데이터 불러오기');
+    });
+
+  </script>
+</body>
+</html>

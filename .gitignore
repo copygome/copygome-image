@@ -1,0 +1,24 @@
+# API 키 (절대 커밋 금지!)
+.env
+
+# Claude 세션 데이터
+.claude/
+
+# 로그 파일
+*.log
+
+# OS 파일
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# 에디터 설정
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# 임시 파일
+*.tmp
+*.temp
